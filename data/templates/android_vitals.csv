@@ -1,0 +1,2 @@
+app_package,date,crash_rate,anr_rate,slow_rendering_rate,excessive_wakeups,affected_devices_json,notes
+com.example.offlineminiarcade,2026-06-01,0.4,0.1,2.2,0,"[]",No major issue

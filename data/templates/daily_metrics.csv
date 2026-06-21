@@ -1,0 +1,2 @@
+app_package,date,installs,uninstalls,store_visitors,listing_conversion_rate,active_users,day_1_retention,day_7_retention,average_session_length,game_starts,retry_count,daily_challenge_opens,daily_challenge_completions,premium_clicks,premium_purchases,notes
+com.example.offlineminiarcade,2026-06-01,4,1,80,5.0,12,20.0,8.0,130,32,18,2,1,0,0,Launch week baseline

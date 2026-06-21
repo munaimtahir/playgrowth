@@ -1,0 +1,2 @@
+app_package,date,campaign_name,country_code,spend,impressions,clicks,installs,cpi,conversions,retention_d1,retention_d7,notes
+com.example.offlineminiarcade,2026-06-01,Launch Test,PK,2.5,1200,80,5,0.5,0,20.0,8.0,Small test only
