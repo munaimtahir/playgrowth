@@ -36,6 +36,20 @@ cp .env.example .env
 docker compose up --build
 ```
 
+Development checks:
+
+```bash
+cd backend
+python manage.py check
+python manage.py test
+
+cd ../frontend
+npm install
+npm run typecheck
+npm run lint
+npm run build
+```
+
 Then open:
 
 - Frontend: http://localhost:5173
@@ -45,9 +59,8 @@ Then open:
 ## Seed Demo Data
 
 ```bash
-docker compose exec backend python manage.py makemigrations growth
 docker compose exec backend python manage.py migrate
-docker compose exec backend python manage.py seed_demo
+docker compose exec backend python manage.py seed_arcade_app
 ```
 
 ## Safety Rule
