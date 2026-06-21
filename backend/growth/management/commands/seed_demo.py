@@ -1,6 +1,8 @@
 from datetime import date, timedelta
 from django.core.management.base import BaseCommand
-from growth.models import AppProfile, DailyMetric, ReviewItem, StoreListingSnapshot
+from growth.models import AdCampaignMetric, AndroidVitalsMetric, AppProfile, DailyMetric, Experiment, ManualActionLog, ReviewItem, ReviewTheme, StoreListingSnapshot
+from growth.services.reports import GrowthReportService
+from growth.services.reviews import ReviewAnalysisService
 
 
 class Command(BaseCommand):
@@ -54,4 +56,56 @@ class Command(BaseCommand):
         )
         ReviewItem.objects.get_or_create(app=app, date=today, reviewer_name='Demo User A', review_text='Nice small games and works offline.', defaults={'rating': 5, 'language': 'en'})
         ReviewItem.objects.get_or_create(app=app, date=today, reviewer_name='Demo User B', review_text='Stack game controls feel a little cramped on my phone.', defaults={'rating': 3, 'language': 'en'})
+        review_themes = ReviewAnalysisService().analyze(app.reviews.all())
+        ReviewTheme.objects.filter(app=app).delete()
+        for theme in review_themes:
+            ReviewTheme.objects.create(
+                app=app,
+                date_range_start=today - timedelta(days=30),
+                date_range_end=today,
+                category=theme['category'],
+                theme=theme['theme'],
+                count=theme['count'],
+                severity=theme['severity'],
+                examples_json=theme['examples_json'],
+                recommendation=theme['recommendation'],
+            )
+        AndroidVitalsMetric.objects.update_or_create(
+            app=app,
+            date=today - timedelta(days=1),
+            defaults={'crash_rate': 0.18, 'anr_rate': 0.12, 'slow_rendering_rate': 0.4, 'notes': 'Demo vitals are healthy.'},
+        )
+        AdCampaignMetric.objects.update_or_create(
+            app=app,
+            date=today - timedelta(days=1),
+            campaign_name='Demo Arcade Install Campaign',
+            defaults={'country_code': 'PK', 'spend': 12.5, 'impressions': 1200, 'clicks': 74, 'installs': 18, 'cpi': 0.69, 'conversions': 4},
+        )
+        Experiment.objects.update_or_create(
+            app=app,
+            name='Test clearer first screenshot caption',
+            defaults={
+                'hypothesis': 'If the first screenshot explains offline quick sessions, then store conversion will improve.',
+                'area': 'screenshots',
+                'variant_a': 'Current screenshot caption',
+                'variant_b': 'Offline quick-session promise',
+                'primary_metric': 'listing_conversion_rate',
+                'secondary_metric': 'store_visitors',
+                'status': 'planned',
+                'minimum_duration_days': 7,
+                'minimum_sample_size': 100,
+            },
+        )
+        ManualActionLog.objects.update_or_create(
+            app=app,
+            action_date=today - timedelta(days=2),
+            action_type='screenshot_change',
+            title='Updated screenshot captions locally',
+            defaults={
+                'description': 'Tested a clearer first screenshot message before any Play Console update.',
+                'changed_location': 'Design draft only',
+                'expected_metric': 'listing_conversion_rate',
+            },
+        )[0]
+        GrowthReportService().generate(app, today - timedelta(days=7), today, report_type='weekly')
         self.stdout.write(self.style.SUCCESS('Seeded Offline Mini Arcade demo data.'))

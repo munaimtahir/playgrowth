@@ -1,57 +1,55 @@
 # PlayGrowth Copilot
 
-AI-assisted growth analyst for Android app developers.
+PlayGrowth Copilot is an AI-assisted growth analyst for Android app developers.
 
-PlayGrowth Copilot tracks growth metrics, diagnoses bottlenecks, generates safe recommendations, drafts copyable listing/review/experiment ideas, and logs what the developer manually changes. It does **not** directly edit Play Console, Google Ads, screenshots, app titles, budgets, reviews, or production releases.
+It tracks growth metrics, diagnoses bottlenecks, drafts safe recommendations, suggests experiments, analyzes reviews, and logs manual actions. It does not directly change Play Console listings, app metadata, ad budgets, production releases, or review responses.
 
-## MVP-0
+## Core rule
 
-Manual-data first:
+The copilot recommends. The developer decides and implements manually.
+
+## MVP Scope
 
 - App profile
-- Manual/CSV metrics import
-- Growth dashboard
-- Daily/weekly growth report
+- Daily metrics
+- CSV imports
+- Dashboard
+- Growth reports
 - Bottleneck diagnosis
 - Recommendation queue
-- Review analyzer
-- Listing advisor
+- Review analysis
+- Listing advisor drafts
 - Experiment planner
 - Manual action log
 - Audit log
 
-## Tech Stack
+## Repository layout
 
-- Backend: Django + Django REST Framework
-- Database: PostgreSQL
-- Worker: Celery + Redis
-- Frontend: Vite React + TypeScript
-- UI: Tailwind CSS + Recharts
-- AI: provider abstraction with Mock provider by default
+- `backend/` Django + DRF API, Celery, mock AI provider
+- `frontend/` Vite React app built into nginx
+- `docs/` deployment, security, safety, and roadmap notes
+- `data/templates/` CSV templates
 
-## Start Locally
+## Production deployment
 
-```bash
-cp .env.example .env
-docker compose up --build
-```
+- App path: `/home/munaim/srv/apps/playgrowth-copilot`
+- Domain: `play.vexel.pk`
+- Frontend port: `127.0.0.1:3057`
+- Backend port: `127.0.0.1:8057`
+- Caddy source: `/home/munaim/srv/proxy/caddy/Caddyfile`
+- Caddy active config: `/etc/caddy/Caddyfile`
 
-Then open:
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the exact runbook.
 
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000/api/v1/
-- Health: http://localhost:8000/api/health/
-
-## Seed Demo Data
+## Local / server startup
 
 ```bash
-docker compose exec backend python manage.py makemigrations growth
-docker compose exec backend python manage.py migrate
-docker compose exec backend python manage.py seed_demo
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml exec backend python manage.py migrate
+docker compose -f docker-compose.prod.yml exec backend python manage.py collectstatic --noinput
+docker compose -f docker-compose.prod.yml exec backend python manage.py seed_demo
 ```
 
-## Safety Rule
+## Safety
 
-The copilot recommends. The developer decides and implements manually.
-
-No external production write automation is included in this scaffold.
+See [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md) and [docs/AI_SAFETY_RULES.md](docs/AI_SAFETY_RULES.md).

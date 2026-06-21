@@ -26,7 +26,7 @@ class BottleneckDiagnosisService:
                 evidence=['Fewer than 3 daily metric rows are available.'],
                 confidence_score=0.35,
                 watch_metric='Add at least 7 days of daily metrics',
-                recommended_category='data_quality',
+                recommended_category='measurement',
             )
 
         visitors = [m.store_visitors for m in metrics]
@@ -51,7 +51,7 @@ class BottleneckDiagnosisService:
                 evidence=['Crash or ANR signal is above safe threshold.'],
                 confidence_score=0.82,
                 watch_metric='crash_rate and anr_rate',
-                recommended_category='product_quality',
+                recommended_category='crashes',
             )
 
         if avg_visitors < 20 and avg_installs < 3:
@@ -90,7 +90,7 @@ class BottleneckDiagnosisService:
                 recommended_category='reviews',
             )
 
-        if avg_cpi is not None and avg_cpi > 1.0 and avg_conversion < 15:
+        if avg_cpi is not None and avg_cpi > 1.0 and (avg_conversion or 0) < 15:
             return DiagnosisResult(
                 bottleneck='Ads efficiency problem',
                 evidence=[f'Ads CPI is high relative to current conversion (CPI {avg_cpi:.2f}).'],

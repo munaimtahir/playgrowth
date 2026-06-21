@@ -193,15 +193,13 @@ class GrowthReport(TimeStampedModel):
 
 class Recommendation(TimeStampedModel):
     STATUSES = [
-        ('suggested', 'Suggested'),
-        ('accepted_to_try', 'Accepted to try'),
+        ('new', 'New'),
+        ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
-        ('manually_implemented', 'Manually implemented'),
+        ('done', 'Done'),
         ('monitoring', 'Monitoring'),
-        ('successful', 'Successful'),
-        ('unsuccessful', 'Unsuccessful'),
-        ('closed', 'Closed'),
     ]
+    PRIORITIES = [('high', 'High'), ('medium', 'Medium'), ('low', 'Low')]
     RISK_LEVELS = [('low', 'Low'), ('medium', 'Medium'), ('high', 'High')]
     EFFORT_LEVELS = [('low', 'Low'), ('medium', 'Medium'), ('high', 'High')]
 
@@ -210,16 +208,18 @@ class Recommendation(TimeStampedModel):
     date = models.DateField(auto_now_add=True)
     category = models.CharField(max_length=100)
     title = models.CharField(max_length=255)
+    priority = models.CharField(max_length=20, choices=PRIORITIES, default='medium')
     diagnosis = models.TextField(blank=True)
     evidence_json = models.JSONField(default=list, blank=True)
     suggested_human_action = models.TextField()
     copyable_text = models.TextField(blank=True)
     do_not_do_yet = models.TextField(blank=True)
     expected_impact = models.TextField(blank=True)
+    why_this_matters = models.TextField(blank=True)
     risk_level = models.CharField(max_length=20, choices=RISK_LEVELS, default='low')
     effort_level = models.CharField(max_length=20, choices=EFFORT_LEVELS, default='low')
     confidence_score = models.FloatField(default=0)
-    status = models.CharField(max_length=30, choices=STATUSES, default='suggested')
+    status = models.CharField(max_length=30, choices=STATUSES, default='new')
     watch_metric = models.CharField(max_length=255, blank=True)
     review_after_days = models.PositiveIntegerField(default=7)
     accepted_at = models.DateTimeField(null=True, blank=True)

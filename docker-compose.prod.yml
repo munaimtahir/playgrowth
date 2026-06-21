@@ -3,7 +3,7 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     env_file:
-      - .env
+      - .env.production
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -16,7 +16,7 @@ services:
       context: ./backend
     restart: unless-stopped
     env_file:
-      - .env
+      - .env.production
     volumes:
       - backend_staticfiles:/app/staticfiles
       - backend_media:/app/media
@@ -31,7 +31,7 @@ services:
       context: ./backend
     restart: unless-stopped
     env_file:
-      - .env
+      - .env.production
     command: celery -A config worker -l info
     volumes:
       - backend_staticfiles:/app/staticfiles
