@@ -1,5 +1,6 @@
 from .ai import get_ai_provider
 from .diagnosis import BottleneckDiagnosisService
+from .safety import normalize_recommendation
 from ..models import GrowthReport, Recommendation
 
 
@@ -24,21 +25,61 @@ class GrowthReportService:
             confidence_score=diagnosis.confidence_score,
             ai_provider=ai.name,
         )
+        created = []
         for item in ai_result.next_actions:
+            normalized = normalize_recommendation(item)
+            recommendation = Recommendation.objects.create(
+                app=app,
+                source_report=report,
+                category=normalized.category,
+                title=normalized.title,
+                priority=normalized.priority,
+                diagnosis=normalized.diagnosis,
+                evidence_json=normalized.evidence,
+                suggested_human_action=normalized.suggested_human_action,
+                copyable_text=normalized.copyable_text,
+                do_not_do_yet=normalized.do_not_do_yet,
+                expected_impact=normalized.why_this_matters,
+                why_this_matters=normalized.why_this_matters,
+                risk_level=normalized.risk_level,
+                effort_level=normalized.effort_level,
+                confidence_score=normalized.confidence_score,
+                watch_metric=normalized.watch_metric,
+            )
+            created.append(recommendation)
+
+        if not created:
+            fallback = normalize_recommendation(
+                {
+                    'category': 'experiment',
+                    'title': 'Define one manual experiment',
+                    'priority': 'medium',
+                    'diagnosis': 'No single severe bottleneck was detected.',
+                    'evidence': ['Metrics look stable enough to keep observing.'],
+                    'suggested_human_action': 'Choose one small manual experiment, document it, and track the result for 7 to 14 days.',
+                    'why_this_matters': 'A controlled experiment creates a measurable next step instead of passive observation.',
+                    'risk_level': 'low',
+                    'effort_level': 'medium',
+                    'confidence_score': 0.55,
+                    'watch_metric': 'installs, conversion, retention, reviews',
+                }
+            )
             Recommendation.objects.create(
                 app=app,
                 source_report=report,
-                category=item.get('category', 'general'),
-                title=item.get('title', 'Recommendation'),
-                diagnosis=item.get('diagnosis', ''),
-                evidence_json=item.get('evidence', []),
-                suggested_human_action=item.get('suggested_human_action', ''),
-                copyable_text=item.get('copyable_text', ''),
-                do_not_do_yet=item.get('do_not_do_yet', ''),
-                expected_impact=item.get('expected_impact', ''),
-                risk_level=item.get('risk_level', 'low'),
-                effort_level=item.get('effort_level', 'low'),
-                confidence_score=item.get('confidence_score', 0),
-                watch_metric=item.get('watch_metric', ''),
+                category=fallback.category,
+                title=fallback.title,
+                priority=fallback.priority,
+                diagnosis=fallback.diagnosis,
+                evidence_json=fallback.evidence,
+                suggested_human_action=fallback.suggested_human_action,
+                copyable_text=fallback.copyable_text,
+                do_not_do_yet=fallback.do_not_do_yet,
+                expected_impact=fallback.why_this_matters,
+                why_this_matters=fallback.why_this_matters,
+                risk_level=fallback.risk_level,
+                effort_level=fallback.effort_level,
+                confidence_score=fallback.confidence_score,
+                watch_metric=fallback.watch_metric,
             )
         return report

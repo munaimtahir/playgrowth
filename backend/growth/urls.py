@@ -15,7 +15,10 @@ from .views import (
     ReviewItemViewSet,
     ReviewThemeViewSet,
     StoreListingSnapshotViewSet,
+    analyze_reviews_view,
+    api_root,
     dashboard_summary,
+    listing_advisor_generate,
     import_daily_metrics_view,
     import_reviews_view,
 )
@@ -37,7 +40,10 @@ router.register('manual-actions', ManualActionLogViewSet)
 router.register('audit-logs', AuditLogViewSet)
 
 urlpatterns = [
+    path('', api_root),
     path('dashboard/summary/', dashboard_summary),
     path('imports/daily-metrics/', import_daily_metrics_view),
     path('imports/reviews/', import_reviews_view),
+    path('listing-advisor/generate/', listing_advisor_generate),
+    path('reviews/analyze/', analyze_reviews_view),
 ] + router.urls
