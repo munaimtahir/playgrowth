@@ -369,3 +369,25 @@ def analyze_reviews_view(request):
             'themes': ReviewThemeSerializer(created, many=True).data,
         }
     )
+
+from .importers import import_android_vitals, import_ads
+
+@api_view(['POST'])
+def import_android_vitals_view(request):
+    app = get_object_or_404(AppProfile, pk=request.data['app'])
+    uploaded = request.FILES.get('file')
+    if not uploaded:
+        return Response({'detail': 'CSV file is required.'}, status=status.HTTP_400_BAD_REQUEST)
+    batch = import_android_vitals(uploaded, app)
+    AuditLog.objects.create(app=app, actor='user', event_type='import_android_vitals', object_type='DataImportBatch', object_id=str(batch.id), summary='Imported android vitals CSV')
+    return Response(DataImportBatchSerializer(batch).data, status=status.HTTP_201_CREATED)
+
+@api_view(['POST'])
+def import_ads_view(request):
+    app = get_object_or_404(AppProfile, pk=request.data['app'])
+    uploaded = request.FILES.get('file')
+    if not uploaded:
+        return Response({'detail': 'CSV file is required.'}, status=status.HTTP_400_BAD_REQUEST)
+    batch = import_ads(uploaded, app)
+    AuditLog.objects.create(app=app, actor='user', event_type='import_ads', object_type='DataImportBatch', object_id=str(batch.id), summary='Imported ads CSV')
+    return Response(DataImportBatchSerializer(batch).data, status=status.HTTP_201_CREATED)

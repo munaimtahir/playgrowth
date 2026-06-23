@@ -2,7 +2,7 @@ import csv
 from datetime import datetime
 from io import TextIOWrapper
 
-from .models import AppProfile, DailyMetric, DataImportBatch, ReviewItem
+from .models import AppProfile, DailyMetric, DataImportBatch, ReviewItem, AndroidVitalsMetric, AdCampaignMetric
 
 
 def _date(value):
@@ -66,6 +66,69 @@ def import_reviews(file_obj, app: AppProfile):
                 device=row.get('device', ''),
                 app_version=row.get('app_version', ''),
                 language=row.get('language', 'en'),
+                import_batch=batch,
+            )
+            count += 1
+        batch.row_count = count
+        batch.status = 'completed'
+        batch.save()
+        return batch
+    except Exception as exc:
+        batch.status = 'failed'
+        batch.error_summary = str(exc)
+        batch.save()
+        raise
+
+def import_android_vitals(file_obj, app: AppProfile):
+    batch = DataImportBatch.objects.create(app=app, import_type='android_vitals', source_filename=getattr(file_obj, 'name', ''), status='pending')
+    try:
+        wrapper = TextIOWrapper(file_obj.file, encoding='utf-8-sig') if hasattr(file_obj, 'file') else file_obj
+        reader = csv.DictReader(wrapper)
+        count = 0
+        for row in reader:
+            AndroidVitalsMetric.objects.create(
+                app=app,
+                date=_date(row['date']),
+                crash_rate=float(row['crash_rate']) if row.get('crash_rate') else None,
+                anr_rate=float(row['anr_rate']) if row.get('anr_rate') else None,
+                slow_rendering_rate=float(row['slow_rendering_rate']) if row.get('slow_rendering_rate') else None,
+                excessive_wakeups=float(row['excessive_wakeups']) if row.get('excessive_wakeups') else None,
+                affected_devices_json=row.get('affected_devices_json', '[]'),
+                notes=row.get('notes', ''),
+                import_batch=batch,
+            )
+            count += 1
+        batch.row_count = count
+        batch.status = 'completed'
+        batch.save()
+        return batch
+    except Exception as exc:
+        batch.status = 'failed'
+        batch.error_summary = str(exc)
+        batch.save()
+        raise
+
+def import_ads(file_obj, app: AppProfile):
+    batch = DataImportBatch.objects.create(app=app, import_type='ads', source_filename=getattr(file_obj, 'name', ''), status='pending')
+    try:
+        wrapper = TextIOWrapper(file_obj.file, encoding='utf-8-sig') if hasattr(file_obj, 'file') else file_obj
+        reader = csv.DictReader(wrapper)
+        count = 0
+        for row in reader:
+            AdCampaignMetric.objects.create(
+                app=app,
+                date=_date(row['date']),
+                campaign_name=row.get('campaign_name', ''),
+                country_code=row.get('country_code', ''),
+                spend=float(row.get('spend') or 0),
+                impressions=int(row.get('impressions') or 0),
+                clicks=int(row.get('clicks') or 0),
+                installs=int(row.get('installs') or 0),
+                cpi=float(row['cpi']) if row.get('cpi') else None,
+                conversions=int(row.get('conversions') or 0),
+                retention_d1=float(row['retention_d1']) if row.get('retention_d1') else None,
+                retention_d7=float(row['retention_d7']) if row.get('retention_d7') else None,
+                notes=row.get('notes', ''),
                 import_batch=batch,
             )
             count += 1

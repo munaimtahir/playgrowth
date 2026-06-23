@@ -21,6 +21,8 @@ from .views import (
     listing_advisor_generate,
     import_daily_metrics_view,
     import_reviews_view,
+    import_android_vitals_view,
+    import_ads_view,
 )
 
 router = DefaultRouter()
@@ -44,6 +46,8 @@ urlpatterns = [
     path('dashboard/summary/', dashboard_summary),
     path('imports/daily-metrics/', import_daily_metrics_view),
     path('imports/reviews/', import_reviews_view),
+    path('imports/android-vitals/', import_android_vitals_view),
+    path('imports/ads/', import_ads_view),
     path('listing-advisor/generate/', listing_advisor_generate),
     path('reviews/analyze/', analyze_reviews_view),
 ] + router.urls
